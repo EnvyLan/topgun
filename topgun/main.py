@@ -5,12 +5,21 @@ import uuid
 
 from fastapi import FastAPI, UploadFile, Response
 from fastapi.responses import HTMLResponse
+from fastapi.middleware.cors import CORSMiddleware
 
 from topgun.models.ExecuteModel import ExecuteModel
 from topgun.nlphandler import find_top1
 from topgun.ocr import extract_data
 
 app = FastAPI()
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 
 @app.post("/execute")
