@@ -1,1 +1,1 @@
-python -m uvicorn main:app --app-dir topgun --host 0.0.0.0 --port 3000
+python3 -m uvicorn main:app --app-dir topgun --host 0.0.0.0 --port 3000
