@@ -1,16 +1,40 @@
 # This is a sample Python script.
 
-# Press ⌃R to execute it or replace it with your code.
-# Press Double ⇧ to search everywhere for classes, files, tool windows, actions, and settings.
-from fastapi import FastAPI, Request
+import os
+import uuid
+
+from fastapi import FastAPI, UploadFile, Response
 from fastapi.responses import HTMLResponse
 
-app = FastAPI(root_path="/hello-azure/")
+from topgun.models.ExecuteModel import ExecuteModel
+from topgun.nlphandler import find_top1
+from topgun.ocr import extract_data
+
+app = FastAPI()
 
 
-@app.get('/hello')
-def root(request: Request):
-    return {"hello": "azure", "root": request.scope.get("root_path")}
+@app.post("/execute")
+def execute(item: ExecuteModel, response: Response):
+    try:
+        workflow, scope = find_top1(item.words)
+        file_list = item.file_list
+        data = extract_data(file_list)
+        return {"msg": f"will execute {workflow}, match_scopt: {scope}", "file_data": data}
+    except Exception as e:
+        response.status_code = 400
+        return {"msg": str(e), "error_code": "400"}
+
+
+@app.post("/upload/")
+async def upload_file(file: UploadFile):
+    print("yes")
+    file_byte = file.file.read()
+    file_name = file.filename
+    if not os.path.exists("upload"):
+        os.mkdir("upload")
+    with open(f"upload/{file_name}", 'wb') as f:
+        f.write(file_byte)
+    return {"file_path": f"upload/{uuid.uuid4()}/{file_name}"}
 
 
 @app.get("/index", response_class=HTMLResponse)
